@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${title} + ' · ResearchFlow'">ResearchFlow</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+<header th:fragment="topbar" class="topbar">
+    <div>
+        <a class="brand" th:href="@{/home}">ResearchFlow</a>
+        <th:block th:if="${currentUsername != null}">
+            <a th:if="${currentRole == 'STUDENT'}" th:href="@{/student/proposals}">My proposals</a>
+            <a th:if="${currentRole == 'FACULTY'}" th:href="@{/faculty/assignments}">Assignments</a>
+            <a th:if="${currentRole == 'ADMINISTRATOR'}" th:href="@{/admin/proposals}">All proposals</a>
+            <a th:href="@{/notifications}">
+                Notifications
+                <span th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}"
+                      th:text="'(' + ${unreadNotificationCount} + ')'"></span>
+            </a>
+        </th:block>
+    </div>
+    <div th:if="${currentUsername != null}">
+        <span th:text="${currentUsername} + ' (' + ${currentRole} + ')'">user</span>
+        <form th:action="@{/logout}" method="post" style="display:inline;margin-left:0.75rem;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn secondary" style="padding:0.35rem 0.7rem;">Logout</button>
+        </form>
+    </div>
+</header>
+
+<div th:fragment="flash" th:remove="tag">
+    <div th:if="${successMessage}" class="flash-ok" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="flash-error" th:text="${errorMessage}"></div>
+</div>
+</body>
+</html>

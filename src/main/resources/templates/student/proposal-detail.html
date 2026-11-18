@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Proposal detail')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<div class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="card">
+        <h1 th:text="${proposal.title}">Title</h1>
+        <p class="meta">
+            Status: <span class="badge" th:text="${proposal.status}">DRAFT</span>
+            · Revision <span th:text="${proposal.revisionNumber}">0</span>
+            · Author <span th:text="${proposal.author.fullName}">Student</span>
+        </p>
+        <div class="actions">
+            <a th:if="${editable}" class="btn secondary"
+               th:href="@{/student/proposals/{id}/edit(id=${proposal.id})}">Edit</a>
+            <form th:if="${canSubmit}" th:action="@{/student/proposals/{id}/submit(id=${proposal.id})}"
+                  method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn"
+                        th:text="${proposal.status.name() == 'REVISION_REQUIRED'} ? 'Resubmit' : 'Submit'">Submit</button>
+            </form>
+            <a th:href="@{/student/proposals}">Back to list</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Content</h2>
+        <h3>Abstract</h3>
+        <p th:text="${proposal.abstractText}"></p>
+        <h3>Objectives</h3>
+        <p th:text="${proposal.objectives}"></p>
+        <h3>Methodology</h3>
+        <p th:text="${proposal.methodology}"></p>
+        <h3>Expected outcomes</h3>
+        <p th:text="${proposal.expectedOutcomes}"></p>
+    </div>
+
+    <div class="card">
+        <h2>Review history</h2>
+        <div th:if="${#lists.isEmpty(proposal.assignments)}">
+            <p class="muted">No reviewer assignments yet.</p>
+        </div>
+        <div th:each="a : ${proposal.assignments}" class="history-item">
+            <p>
+                <strong th:text="${a.faculty.fullName}">Faculty</strong>
+                · cycle <span th:text="${a.revisionNumber}">1</span>
+                · <span th:text="${a.active} ? 'active' : 'inactive'">active</span>
+            </p>
+            <p th:if="${a.review == null}" class="muted">Review pending.</p>
+            <th:block th:if="${a.review != null}">
+                <p>
+                    Recommendation: <span class="badge" th:text="${a.review.recommendation}"></span>
+                    · <span th:text="${a.review.submittedAt}"></span>
+                </p>
+                <p th:text="${a.review.comments}"></p>
+            </th:block>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Admin decisions</h2>
+        <div th:if="${#lists.isEmpty(proposal.decisions)}">
+            <p class="muted">No decisions yet.</p>
+        </div>
+        <div th:each="d : ${proposal.decisions}" class="history-item">
+            <p>
+                <span class="badge" th:text="${d.decisionType}"></span>
+                · cycle <span th:text="${d.revisionNumber}"></span>
+                · <span th:text="${d.decidedAt}"></span>
+            </p>
+            <p th:if="${d.note != null and !#strings.isEmpty(d.note)}" th:text="${d.note}"></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

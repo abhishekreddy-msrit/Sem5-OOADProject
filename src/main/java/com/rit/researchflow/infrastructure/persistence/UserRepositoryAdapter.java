@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import com.rit.researchflow.domain.repository.UserRepository;
 import com.rit.researchflow.domain.user.Administrator;
+import com.rit.researchflow.domain.user.Faculty;
 import com.rit.researchflow.domain.user.User;
 
 @Repository
@@ -41,5 +42,10 @@ public class UserRepositoryAdapter implements UserRepository {
     @Override
     public List<Administrator> findActiveAdministrators() {
         return jpaRepository.findActiveAdministrators();
+    }
+
+    @Override
+    public List<Faculty> findActiveFaculty() {
+        return jpaRepository.findActiveFaculty();
     }
 }

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Notifications')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<div class="container">
+    <div class="card">
+        <h1>Notifications</h1>
+        <p class="muted">Inbox for the logged-in user.</p>
+    </div>
+
+    <div class="card" th:if="${#lists.isEmpty(notifications)}">
+        <p class="muted">No notifications.</p>
+    </div>
+
+    <div th:each="n : ${notifications}" class="card">
+        <p>
+            <span class="badge" th:classappend="${n.read} ? ' ok' : ' warn'"
+                  th:text="${n.read} ? 'Read' : 'Unread'">Unread</span>
+            <span class="meta" th:text="${n.type}">TYPE</span>
+            · <span class="meta" th:text="${n.createdAt}"></span>
+        </p>
+        <p th:text="${n.message}">Message</p>
+        <p th:if="${n.proposal != null}">
+            Related proposal:
+            <span th:text="${n.proposal.title}"></span>
+            (<span th:text="${n.proposal.id}"></span>)
+        </p>
+        <form th:if="${!n.read}" th:action="@{/notifications/{id}/read(id=${n.id})}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn secondary">Mark as read</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

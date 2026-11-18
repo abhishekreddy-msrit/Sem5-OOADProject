@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Faculty assignments')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<div class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="card">
+        <h1>Assigned proposals</h1>
+        <p class="muted">Proposals assigned to you for review.</p>
+    </div>
+
+    <div class="card" th:if="${#lists.isEmpty(proposals)}">
+        <p class="muted">No assignments yet.</p>
+    </div>
+
+    <table th:if="${!#lists.isEmpty(proposals)}">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Status</th>
+            <th>Revision</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${proposals}">
+            <td th:text="${p.title}">Title</td>
+            <td th:text="${p.author.fullName}">Author</td>
+            <td><span class="badge" th:text="${p.status}">UNDER_REVIEW</span></td>
+            <td th:text="${p.revisionNumber}">1</td>
+            <td><a th:href="@{/faculty/proposals/{id}(id=${p.id})}">Open</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

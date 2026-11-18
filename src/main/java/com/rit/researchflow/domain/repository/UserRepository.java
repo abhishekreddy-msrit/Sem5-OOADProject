@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.rit.researchflow.domain.user.Administrator;
+import com.rit.researchflow.domain.user.Faculty;
 import com.rit.researchflow.domain.user.User;
 
 public interface UserRepository {
@@ -17,4 +18,6 @@ public interface UserRepository {
     boolean existsByUsername(String username);
 
     List<Administrator> findActiveAdministrators();
+
+    List<Faculty> findActiveFaculty();
 }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Proposal form')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<div class="container">
+    <div class="card">
+        <h1 th:text="${mode == 'edit'} ? 'Edit proposal' : 'New draft proposal'">Proposal</h1>
+
+        <form th:action="${mode == 'edit'} ? @{/student/proposals/{id}/edit(id=${proposalId})} : @{/student/proposals}"
+              th:object="${proposalForm}" method="post" class="stack">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div>
+                <label for="title">Title</label>
+                <input id="title" type="text" th:field="*{title}" required/>
+                <div class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+            </div>
+            <div>
+                <label for="abstractText">Abstract</label>
+                <textarea id="abstractText" th:field="*{abstractText}" required></textarea>
+                <div class="field-error" th:if="${#fields.hasErrors('abstractText')}" th:errors="*{abstractText}"></div>
+            </div>
+            <div>
+                <label for="objectives">Objectives</label>
+                <textarea id="objectives" th:field="*{objectives}" required></textarea>
+                <div class="field-error" th:if="${#fields.hasErrors('objectives')}" th:errors="*{objectives}"></div>
+            </div>
+            <div>
+                <label for="methodology">Methodology</label>
+                <textarea id="methodology" th:field="*{methodology}" required></textarea>
+                <div class="field-error" th:if="${#fields.hasErrors('methodology')}" th:errors="*{methodology}"></div>
+            </div>
+            <div>
+                <label for="expectedOutcomes">Expected outcomes</label>
+                <textarea id="expectedOutcomes" th:field="*{expectedOutcomes}" required></textarea>
+                <div class="field-error" th:if="${#fields.hasErrors('expectedOutcomes')}" th:errors="*{expectedOutcomes}"></div>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn" th:text="${mode == 'edit'} ? 'Save changes' : 'Create draft'">Save</button>
+                <a th:href="@{/student/proposals}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

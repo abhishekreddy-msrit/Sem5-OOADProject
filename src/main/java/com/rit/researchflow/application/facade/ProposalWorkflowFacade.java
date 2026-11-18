@@ -173,24 +173,57 @@ public class ProposalWorkflowFacade {
 
     @Transactional(readOnly = true)
     public ResearchProposal getProposal(Long proposalId) {
-        return requireProposal(proposalId);
+        return initializeForView(requireProposal(proposalId));
+    }
+
+    @Transactional(readOnly = true)
+    public ResearchProposal getOwnedProposal(Long proposalId, Long studentId) {
+        return initializeForView(requireOwnedProposal(proposalId, studentId));
+    }
+
+    @Transactional(readOnly = true)
+    public ResearchProposal getAssignedProposal(Long proposalId, Long facultyId) {
+        ResearchProposal proposal = requireProposal(proposalId);
+        Faculty faculty = requireFaculty(facultyId);
+        boolean assigned = proposal.getAssignments().stream()
+                .anyMatch(a -> a.belongsTo(faculty));
+        if (!assigned) {
+            throw new ApplicationException("You are not assigned to this proposal");
+        }
+        return initializeForView(proposal);
     }
 
     @Transactional(readOnly = true)
     public List<ResearchProposal> listProposalsForStudent(Long studentId) {
         requireStudent(studentId);
-        return researchProposalRepository.findByAuthorId(studentId);
+        return researchProposalRepository.findByAuthorId(studentId).stream()
+                .map(this::initializeForList)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<ResearchProposal> listAssignedProposalsForFaculty(Long facultyId) {
         requireFaculty(facultyId);
-        return researchProposalRepository.findByActiveFacultyAssignee(facultyId);
+        return researchProposalRepository.findByActiveFacultyAssignee(facultyId).stream()
+                .map(this::initializeForList)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<ResearchProposal> listAllProposals() {
-        return researchProposalRepository.findAll();
+        return researchProposalRepository.findAll().stream()
+                .map(this::initializeForList)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Faculty> listActiveFaculty() {
+        List<Faculty> faculty = userRepository.findActiveFaculty();
+        faculty.forEach(f -> {
+            f.getFullName();
+            f.getUsername();
+        });
+        return faculty;
     }
 
     @Transactional(readOnly = true)
@@ -224,6 +257,45 @@ public class ProposalWorkflowFacade {
                 null,
                 type,
                 message));
+    }
+
+    /**
+     * Touch associations needed by list screens while the transaction is open
+     * (open-in-view is disabled).
+     */
+    private ResearchProposal initializeForList(ResearchProposal proposal) {
+        if (proposal.getAuthor() != null) {
+            proposal.getAuthor().getFullName();
+        }
+        proposal.getStatus();
+        proposal.getTitle();
+        return proposal;
+    }
+
+    /**
+     * Touch associations needed by detail screens while the transaction is open
+     * (open-in-view is disabled).
+     */
+    private ResearchProposal initializeForView(ResearchProposal proposal) {
+        initializeForList(proposal);
+        for (ReviewerAssignment assignment : proposal.getAssignments()) {
+            if (assignment.getFaculty() != null) {
+                assignment.getFaculty().getFullName();
+            }
+            Review review = assignment.getReview();
+            if (review != null) {
+                review.getComments();
+                review.getRecommendation();
+            }
+        }
+        for (DecisionRecord decision : proposal.getDecisions()) {
+            if (decision.getDecidedBy() != null) {
+                decision.getDecidedBy().getFullName();
+            }
+            decision.getDecisionType();
+            decision.getNote();
+        }
+        return proposal;
     }
 
     private ResearchProposal requireProposal(Long proposalId) {

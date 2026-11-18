@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Login')}"></head>
+<body>
+<div class="auth-wrap">
+    <div class="card">
+        <h1>ResearchFlow</h1>
+        <p class="muted">Sign in to continue.</p>
+
+        <div th:if="${param.error}" class="flash-error">Invalid username or password.</div>
+        <div th:if="${param.logout}" class="flash-ok">You have been logged out.</div>
+        <div th:if="${successMessage}" class="flash-ok" th:text="${successMessage}"></div>
+
+        <form th:action="@{/login}" method="post" class="stack">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div>
+                <label for="username">Username</label>
+                <input id="username" type="text" name="username" required autofocus/>
+            </div>
+            <div>
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password" required/>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn">Log in</button>
+                <a class="btn secondary" th:href="@{/register}">Register</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

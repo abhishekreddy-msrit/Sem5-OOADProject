@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Review proposal')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<div class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="card">
+        <h1 th:text="${proposal.title}">Title</h1>
+        <p class="meta">
+            Status: <span class="badge" th:text="${proposal.status}"></span>
+            · Revision <span th:text="${proposal.revisionNumber}"></span>
+            · Author <span th:text="${proposal.author.fullName}"></span>
+        </p>
+        <a th:href="@{/faculty/assignments}">Back to assignments</a>
+    </div>
+
+    <div class="card">
+        <h2>Content</h2>
+        <h3>Abstract</h3>
+        <p th:text="${proposal.abstractText}"></p>
+        <h3>Objectives</h3>
+        <p th:text="${proposal.objectives}"></p>
+        <h3>Methodology</h3>
+        <p th:text="${proposal.methodology}"></p>
+        <h3>Expected outcomes</h3>
+        <p th:text="${proposal.expectedOutcomes}"></p>
+    </div>
+
+    <div class="card" th:if="${canReview}">
+        <h2>Submit review</h2>
+        <form th:action="@{/faculty/proposals/{id}/reviews(id=${proposal.id})}"
+              th:object="${reviewForm}" method="post" class="stack">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" th:field="*{assignmentId}"/>
+
+            <div>
+                <label for="comments">Comments</label>
+                <textarea id="comments" th:field="*{comments}" required></textarea>
+                <div class="field-error" th:if="${#fields.hasErrors('comments')}" th:errors="*{comments}"></div>
+            </div>
+            <div>
+                <label for="recommendation">Recommendation</label>
+                <select id="recommendation" th:field="*{recommendation}" required>
+                    <option value="">Select…</option>
+                    <option th:each="r : ${T(com.rit.researchflow.domain.proposal.RecommendationType).values()}"
+                            th:value="${r}" th:text="${r}"></option>
+                </select>
+                <div class="field-error" th:if="${#fields.hasErrors('recommendation')}" th:errors="*{recommendation}"></div>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn">Submit review</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" th:if="${!canReview and activeAssignment != null and activeAssignment.review != null}">
+        <h2>Your review (current cycle)</h2>
+        <p>
+            Recommendation: <span class="badge" th:text="${activeAssignment.review.recommendation}"></span>
+        </p>
+        <p th:text="${activeAssignment.review.comments}"></p>
+    </div>
+
+    <div class="card">
+        <h2>All cycle reviews</h2>
+        <div th:if="${#lists.isEmpty(proposal.assignments)}">
+            <p class="muted">No assignments recorded.</p>
+        </div>
+        <div th:each="a : ${proposal.assignments}" class="history-item">
+            <p>
+                <strong th:text="${a.faculty.fullName}"></strong>
+                · cycle <span th:text="${a.revisionNumber}"></span>
+            </p>
+            <p th:if="${a.review == null}" class="muted">Pending</p>
+            <th:block th:if="${a.review != null}">
+                <p><span class="badge" th:text="${a.review.recommendation}"></span></p>
+                <p th:text="${a.review.comments}"></p>
+            </th:block>
+        </div>
+    </div>
+</div>
+</body>
+</html>

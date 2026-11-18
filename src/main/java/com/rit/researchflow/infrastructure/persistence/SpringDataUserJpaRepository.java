@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.rit.researchflow.domain.user.Administrator;
+import com.rit.researchflow.domain.user.Faculty;
 import com.rit.researchflow.domain.user.User;
 
 public interface SpringDataUserJpaRepository extends JpaRepository<User, Long> {
@@ -17,4 +18,7 @@ public interface SpringDataUserJpaRepository extends JpaRepository<User, Long> {
 
     @Query("select a from Administrator a where a.active = true")
     List<Administrator> findActiveAdministrators();
+
+    @Query("select f from Faculty f where f.active = true order by f.fullName")
+    List<Faculty> findActiveFaculty();
 }

@@ -40,9 +40,8 @@ class SecurityAccessTest {
     }
 
     @Test
-    void administratorCanReachAdminPathAuthorization() throws Exception {
-        // No UI controller yet, so authorised requests may be 404 after security checks
+    void administratorCanReachAdminDashboard() throws Exception {
         mockMvc.perform(get("/admin/proposals").with(user("admin").roles("ADMINISTRATOR")))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 }

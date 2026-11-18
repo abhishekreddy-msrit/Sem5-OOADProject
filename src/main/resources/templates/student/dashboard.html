@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Student dashboard')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<div class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="card">
+        <h1>My proposals</h1>
+        <p class="muted">Create drafts, submit for review, and track status.</p>
+        <div class="actions">
+            <a class="btn" th:href="@{/student/proposals/new}">New draft</a>
+        </div>
+    </div>
+
+    <div class="card" th:if="${#lists.isEmpty(proposals)}">
+        <p class="muted">No proposals yet.</p>
+    </div>
+
+    <table th:if="${!#lists.isEmpty(proposals)}">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Revision</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${proposals}">
+            <td th:text="${p.title}">Title</td>
+            <td><span class="badge" th:text="${p.status}">DRAFT</span></td>
+            <td th:text="${p.revisionNumber}">0</td>
+            <td><a th:href="@{/student/proposals/{id}(id=${p.id})}">Open</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
