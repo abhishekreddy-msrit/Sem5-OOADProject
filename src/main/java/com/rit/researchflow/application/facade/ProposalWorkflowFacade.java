@@ -185,10 +185,13 @@ public class ProposalWorkflowFacade {
     public ResearchProposal getAssignedProposal(Long proposalId, Long facultyId) {
         ResearchProposal proposal = requireProposal(proposalId);
         Faculty faculty = requireFaculty(facultyId);
-        boolean assigned = proposal.getAssignments().stream()
-                .anyMatch(a -> a.belongsTo(faculty));
-        if (!assigned) {
-            throw new ApplicationException("You are not assigned to this proposal");
+        boolean activelyAssignedThisCycle = proposal.getAssignments().stream()
+                .anyMatch(a -> a.belongsTo(faculty)
+                        && a.isActive()
+                        && a.matchesCycle(proposal.getRevisionNumber()));
+        if (!activelyAssignedThisCycle) {
+            throw new ApplicationException(
+                    "You are not actively assigned to this proposal for the current revision cycle");
         }
         return initializeForView(proposal);
     }

@@ -2,6 +2,7 @@ package com.rit.researchflow.infrastructure.security;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,13 +31,21 @@ class SecurityAccessTest {
     @Test
     void studentCannotAccessAdminPaths() throws Exception {
         mockMvc.perform(get("/admin/proposals").with(user("student").roles("STUDENT")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(forwardedUrl("/access-denied"));
     }
 
     @Test
     void facultyCannotAccessAdminPaths() throws Exception {
         mockMvc.perform(get("/admin/proposals").with(user("faculty").roles("FACULTY")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(forwardedUrl("/access-denied"));
+    }
+
+    @Test
+    void accessDeniedPageIsReachable() throws Exception {
+        mockMvc.perform(get("/access-denied").with(user("student").roles("STUDENT")))
+                .andExpect(status().isOk());
     }
 
     @Test

@@ -31,7 +31,8 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/error")
+                                "/error",
+                                "/access-denied")
                         .permitAll()
                         .requestMatchers("/student/**").hasRole("STUDENT")
                         .requestMatchers("/faculty/**").hasRole("FACULTY")
@@ -44,6 +45,7 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login?logout")
                         .permitAll())
+                .exceptionHandling(ex -> ex.accessDeniedPage("/access-denied"))
                 .csrf(Customizer.withDefaults());
         return http.build();
     }

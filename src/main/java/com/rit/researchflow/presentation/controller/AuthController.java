@@ -44,8 +44,13 @@ public class AuthController {
         if (bindingResult.hasErrors()) {
             return "auth/register";
         }
-        if ("ADMINISTRATOR".equalsIgnoreCase(form.getRole())) {
-            bindingResult.rejectValue("role", "forbidden", "Administrator registration is not allowed");
+
+        String role = form.getRole() == null ? "" : form.getRole().trim().toUpperCase();
+        if (!"STUDENT".equals(role) && !"FACULTY".equals(role)) {
+            bindingResult.rejectValue(
+                    "role",
+                    "forbidden",
+                    "Public registration allows only Student or Faculty accounts");
             return "auth/register";
         }
 
@@ -58,7 +63,7 @@ public class AuthController {
                 form.getIdentifierOrDesignation());
 
         try {
-            if ("FACULTY".equalsIgnoreCase(form.getRole())) {
+            if ("FACULTY".equals(role)) {
                 registrationService.registerFaculty(command);
             } else {
                 registrationService.registerStudent(command);

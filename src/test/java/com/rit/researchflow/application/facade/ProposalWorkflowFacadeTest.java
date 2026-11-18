@@ -2,7 +2,10 @@ package com.rit.researchflow.application.facade;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.rit.researchflow.application.exception.ApplicationException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -82,6 +85,53 @@ class ProposalWorkflowFacadeTest {
 
         facade.approveProposal(submitted.getId(), admin.getId(), "Approved for demonstration.");
         assertEquals(ProposalStatus.APPROVED, facade.getProposal(submitted.getId()).getStatus());
+    }
+
+    @Test
+    void facultyDetailAccessRequiresActiveAssignmentForCurrentRevisionCycle() {
+        long n = System.nanoTime();
+        Faculty otherFaculty = (Faculty) userRepository.save(new Faculty(
+                "facade_f2_" + n, passwordEncoder.encode("password123"), "Other Faculty",
+                "facade.f2@example.com", "CSE", "Assistant Professor"));
+
+        ResearchProposal draft = facade.createDraft(student.getId(), sampleContent("Active Cycle Access Study"));
+        ResearchProposal submitted = facade.submitProposal(draft.getId(), student.getId());
+        ReviewerAssignment assignment =
+                facade.assignReviewer(submitted.getId(), faculty.getId(), admin.getId());
+
+        // Active current-cycle assignee can open the proposal.
+        ResearchProposal visible = facade.getAssignedProposal(submitted.getId(), faculty.getId());
+        assertEquals(submitted.getId(), visible.getId());
+
+        // Unassigned faculty cannot open it.
+        assertThrows(ApplicationException.class,
+                () -> facade.getAssignedProposal(submitted.getId(), otherFaculty.getId()));
+
+        facade.submitReview(
+                submitted.getId(),
+                faculty.getId(),
+                assignment.getId(),
+                "Needs clearer measurable outcomes before another review cycle can proceed.",
+                RecommendationType.REVISION);
+        facade.requestRevision(
+                submitted.getId(),
+                admin.getId(),
+                "Please revise objectives and resubmit for a new review cycle.");
+
+        // Still active on revision-required: access remains until resubmission deactivates the cycle.
+        facade.getAssignedProposal(submitted.getId(), faculty.getId());
+
+        ResearchProposal editable = facade.getOwnedProposal(submitted.getId(), student.getId());
+        facade.updateContent(editable.getId(), student.getId(), sampleContent("Active Cycle Access Study Revised"));
+        ResearchProposal resubmitted = facade.submitProposal(editable.getId(), student.getId());
+        assertEquals(2, resubmitted.getRevisionNumber());
+        assertTrue(resubmitted.getAssignments().stream()
+                .filter(a -> a.getRevisionNumber() == 1)
+                .allMatch(a -> !a.isActive()));
+
+        // Historical cycle-1 assignment no longer grants detail access.
+        assertThrows(ApplicationException.class,
+                () -> facade.getAssignedProposal(resubmitted.getId(), faculty.getId()));
     }
 
     private ProposalContentCommand sampleContent(String title) {
