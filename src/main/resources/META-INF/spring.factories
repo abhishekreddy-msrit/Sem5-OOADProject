@@ -1,0 +1,5 @@
+# Legacy registration for compatibility with SpringFactoriesLoader
+org.springframework.context.ApplicationContextInitializer=\
+com.rit.researchflow.config.RequiredDbEnvInitializer
+org.springframework.boot.env.EnvironmentPostProcessor=\
+com.rit.researchflow.config.DotEnvEnvironmentPostProcessor
