@@ -36,8 +36,10 @@ public class DatabaseConnectivityVerifier implements ApplicationRunner {
                 throw new IllegalStateException("MariaDB connectivity check failed: SELECT 1 returned no row");
             }
             String product = connection.getMetaData().getDatabaseProductName();
+            String version = connection.getMetaData().getDatabaseProductVersion();
             String catalog = connection.getCatalog();
-            log.info("MariaDB connectivity verified (product={}, catalog={})", product, catalog);
+            log.info("MariaDB connectivity verified (product={}, version={}, catalog={})",
+                    product, version, catalog);
         }
     }
 }

@@ -51,6 +51,16 @@
             <artifactId>mariadb-java-client</artifactId>
         </dependency>
 
+        <!-- Flyway 10.x: core alone is not enough for MariaDB; flyway-mysql provides MariaDB support -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

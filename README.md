@@ -7,59 +7,55 @@ Academic Research Proposal and Review Management System (OOAD course project).
 - Java 17
 - Spring Boot 3.4
 - Maven 3.10+
-- Thymeleaf
+- Thymeleaf (screens not implemented yet)
 - Spring Data JPA / Hibernate
-- Spring Security
+- Spring Security (session + BCrypt)
+- Flyway (`flyway-core` + `flyway-mysql` for MariaDB support)
 - MariaDB 12.x
 
 ## Prerequisites
 
 1. JDK 17
 2. Apache Maven 3.10+
-3. MariaDB server running locally
-4. Database and user already created (example):
+3. MariaDB with databases:
 
 ```sql
 CREATE DATABASE researchflow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE researchflow_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER 'researchflow'@'localhost' IDENTIFIED BY 'your_password_here';
 GRANT ALL PRIVILEGES ON researchflow.* TO 'researchflow'@'localhost';
+GRANT ALL PRIVILEGES ON researchflow_test.* TO 'researchflow'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-## Configuration (credentials)
+If only the test database is missing, run `scripts/create-test-database.sql` as a MariaDB admin user.
 
-Database credentials are **never** hardcoded.
+## Configuration
 
-1. Copy `.env.example` to `.env` in the project root.
-2. Set `DB_URL`, `DB_USER`, and `DB_PASSWORD`.
-3. Keep `.env` private — it is listed in `.gitignore`.
+1. Copy `.env.example` to `.env`.
+2. Set `DB_URL`, `DB_USER`, `DB_PASSWORD`.
+3. Set demo seed usernames/passwords (`ADMIN_*`, `SEED_STUDENT_*`, `SEED_FACULTY_*`) for local demo data.
+4. Never commit `.env`.
 
-Example `.env`:
+`DotEnvEnvironmentPostProcessor` loads `.env` explicitly.
 
-```env
-DB_URL=jdbc:mariadb://localhost:3306/researchflow
-DB_USER=researchflow
-DB_PASSWORD=your_password_here
-```
+## Design patterns (application layer)
 
-You may instead export the same variables in your OS environment. OS environment variables take precedence over `.env`.
+| Pattern | Where |
+|---------|--------|
+| Factory Method | `UserCreator` + `StudentUserCreator` / `FacultyUserCreator` |
+| Facade | `ProposalWorkflowFacade` |
+| Observer | `ProposalWorkflowEvent` + `NotificationEventListener` (`AFTER_COMMIT`) + `NotificationWriteService` (`REQUIRES_NEW`) |
 
-A custom `DotEnvEnvironmentPostProcessor` loads `.env` explicitly. Spring Boot does not load `.env` by itself.
+Administrator accounts are seed-only (not public registration).
 
-## Build
-
-From the project root (PowerShell):
+## Build and test
 
 ```powershell
-# If mvn is not on PATH:
 & "E:\Maven\apache-maven-3.10.1\bin\mvn.cmd" clean verify
 ```
 
-Or, if Maven is on your PATH:
-
-```powershell
-mvn clean verify
-```
+Persistence/application tests use profile `test` and database `researchflow_test` only.
 
 ## Run
 
@@ -67,30 +63,24 @@ mvn clean verify
 & "E:\Maven\apache-maven-3.10.1\bin\mvn.cmd" spring-boot:run
 ```
 
-On successful startup you should see a log line confirming MariaDB connectivity (product and catalog only — no secrets).
+On startup, Flyway validates/migrates schema and (when seed env vars are set) loads demo users and proposals.
 
 Application URL: [http://localhost:8080](http://localhost:8080)
 
-## Schema strategy (current phase)
+Default Spring Security login is available. UI pages are not implemented yet.
 
-`spring.jpa.hibernate.ddl-auto` is set to `none`.
+## Current milestone status
 
-- No automatic schema creation or recreation
-- Domain entities and tables will be introduced in a later step
+Implemented:
 
-## Project layout (packages)
+- Domain model + persistence (Step 2)
+- Factory Method registration
+- Proposal workflow facade
+- Observer notifications (after-commit)
+- Session security + roles
+- Idempotent demo seeding
 
-```
-com.rit.researchflow
-├── presentation
-├── application
-├── domain
-├── infrastructure
-└── config
-```
+Not yet implemented:
 
-## Current phase status
-
-Initial Spring Boot + MariaDB connectivity setup only.
-
-Not yet implemented: domain entities, repositories, authentication/registration, workflow, design-pattern wiring, or UI screens.
+- Controllers / Thymeleaf screens
+- End-to-end UI workflows

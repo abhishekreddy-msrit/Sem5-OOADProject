@@ -10,15 +10,18 @@ spring:
     hikari:
       pool-name: researchflow-pool
       maximum-pool-size: 10
-      # Fail fast if MariaDB is unreachable
       connection-timeout: 10000
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
 
   jpa:
     open-in-view: false
     database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:
-      # Non-destructive: do not create, update, or drop schema in this setup phase
-      ddl-auto: none
+      # Schema is owned by Flyway; Hibernate only validates
+      ddl-auto: validate
     properties:
       hibernate:
         jdbc:
@@ -27,6 +30,7 @@ spring:
 
   thymeleaf:
     cache: false
+    check-template-location: false
 
 server:
   port: 8080
@@ -35,6 +39,6 @@ logging:
   level:
     root: INFO
     com.rit.researchflow: INFO
-    # Avoid noisy SQL parameter logging that could leak data
     org.hibernate.SQL: WARN
     org.hibernate.orm.jdbc.bind: WARN
+    org.flywaydb: INFO
